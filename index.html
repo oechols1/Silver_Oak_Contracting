@@ -1,40 +1,196 @@
-<!-- === APPEND: Force MP4 hero video + poster === -->
-<script>
-(function () {
-  // CHANGE THESE PATHS IF YOUR FILE/FOLDER NAMES ARE DIFFERENT
-  var MP4_PATH   = "videos/videoplayback-transcode.mp4?v=2"; // MP4 only
-  var POSTER_IMG = "images/hero-static.jpg";                 // optional still
-
-  var video = document.querySelector(".hero-video video");
-  if (!video) return;
-
-  // Ensure required attributes for autoplay on mobile
-  video.setAttribute("autoplay", "");
-  video.setAttribute("muted", "");
-  video.setAttribute("playsinline", "");
-  video.setAttribute("loop", "");
-
-  // Set poster (won’t break if file doesn’t exist)
-  video.setAttribute("poster", POSTER_IMG);
-
-  // Nuke any existing <source> children (e.g., webm) and inject MP4 only
-  while (video.firstChild) video.removeChild(video.firstChild);
-  var mp4 = document.createElement("source");
-  mp4.src = MP4_PATH;
-  mp4.type = "video/mp4";
-  video.appendChild(mp4);
-
-  // Try to load & play; fail silently if user gesture is required
-  try {
-    video.load();
-    var playPromise = video.play();
-    if (playPromise && typeof playPromise.then === "function") {
-      playPromise.catch(function(){ /* ignore autoplay block */ });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Silver Oak Contracting</title>
+  <meta name="description" content="Structural steel fabrication and erection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --neutral-100:#ffffff;
+      --neutral-200:#f7f9f8;
+      --neutral-300:#eceeec;
+      --neutral-400:#dee2df;
+      --brand-100:#eafaf0;
+      --brand-200:#c8f0d6;
+      --brand-300:#a3e3b9;
+      --brand-400:#7fd79b;
+      --bg: var(--neutral-100);
+      --text:#191f1a;
+      --text-dim:#5a665f;
+      --line:#e6e9e7;
+      --radius:4px;
+      --shadow:0 2px 10px rgba(0,0,0,.06);
     }
-  } catch (e) { /* ignore */ }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Source Sans 3',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      line-height:1.6;
+    }
+    h1,h2,h3{margin:0;font-family:'Oswald',Impact,Arial Narrow,sans-serif}
+    h1{font-size:clamp(32px,5vw,54px);font-weight:700}
+    h2{font-size:clamp(26px,3.2vw,38px);font-weight:700}
+    .container{max-width:1140px;margin:0 auto;padding:0 24px}
+    .section{padding:clamp(48px,7vw,88px) 0;border-top:1px solid var(--line)}
+    .section:first-of-type{border-top:none}
+    img{max-width:100%;display:block}
+    .header-section{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);backdrop-filter:blur(6px);}
+    .navbar{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+    .brand-wrap{display:flex;align-items:center;gap:10px}
+    .brand-logo{width:36px;height:36px;object-fit:contain}
+    .nav-links{display:flex;gap:18px;align-items:center}
+    .nav-links a{color:var(--text-dim);font-weight:600;text-decoration:none}
+    .nav-links a:hover{color:var(--text)}
+    .nav-cta{padding:10px 16px;border-radius:var(--radius);background:var(--brand-300);color:#0e140f;font-weight:700;border:1px solid var(--brand-200);box-shadow:var(--shadow);}
+    .section--hero{background:#fff;position:relative;min-height:70vh;display:flex;align-items:center;overflow:hidden}
+    .hero-video{position:absolute;inset:0;z-index:0}
+    .hero-video video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:.38; /* brighter */
+      filter:grayscale(10%) brightness(106%);
+    }
+    .hero-overlay{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.45));
+    }
+    .hero-content{position:relative;z-index:2;max-width:900px;margin:auto;padding:0 24px;text-align:center}
+    .hero-kicker{display:inline-block;margin-bottom:12px;padding:6px 10px;font-weight:700;font-size:12px;text-transform:uppercase;background:var(--brand-100);border:1px solid var(--brand-200);border-radius:var(--radius);}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;margin:6px;border-radius:var(--radius);font-weight:700;border:1px solid var(--line);background:#fff;color:var(--text);box-shadow:var(--shadow);text-decoration:none}
+    .btn.primary{background:var(--brand-300);color:#0e140f;border-color:var(--brand-200)}
+    .btn.primary:hover{background:var(--brand-400)}
+    .about-grid,.contact-grid,.projects-head{display:grid;gap:24px}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .proj-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+    .proj-body{padding:16px}
+    footer{border-top:1px solid var(--line);background:#fff;padding:40px 0;text-align:center}
+  </style>
+</head>
+<body>
+  <header class="header-section">
+    <div class="container navbar">
+      <a href="#" class="brand-wrap">
+        <img src="images/IconOnly_Transparent.png" class="brand-logo" alt="Silver Oak">
+        <span class="brand-name">Silver Oak Contracting</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+        <a href="#contact" class="nav-cta">Get a Quote</a>
+      </nav>
+    </div>
+  </header>
 
-  // Optional: quick console diagnostics
-  video.addEventListener("loadeddata", function(){ console.log("Hero video loaded"); });
-  video.addEventListener("error", function(){ console.warn("Hero video error", video.error); });
-})();
-</script>
+  <section class="section section--hero hero-section" id="home" aria-label="Hero">
+    <div class="hero-video">
+      <video autoplay muted playsinline loop poster="images/hero-static.jpg">
+        <source src="videos/videoplayback-transcode.mp4?v=2" type="video/mp4">
+        Your browser does not support HTML5 video.
+      </video>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-kicker">Structural Steel Specialists</div>
+      <h1>Precision-built steel. On schedule. On budget.</h1>
+      <p>From fabrication to erection, we deliver safe, code-compliant steel work for commercial and industrial builds across Georgia.</p>
+      <div>
+        <a class="btn primary" href="#contact">Get a Quote</a>
+        <a class="btn" href="#projects">See Portfolio</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="section">
+    <div class="container about-grid">
+      <div>
+        <h2>Integrity in Every Beam</h2>
+        <p>Silver Oak Contracting specializes in structural steel fabrication and erection, pairing craftsmanship with precise scheduling to keep your projects on track.</p>
+        <ul>
+          <li>Licensed, insured, and OSHA-focused safety culture</li>
+          <li>Certified rigging and on-site welding</li>
+          <li>QA documentation on request</li>
+        </ul>
+      </div>
+      <div><img src="https://picsum.photos/960/720?random=101" alt="Steel assembly"></div>
+    </div>
+  </section>
+
+  <section id="services" class="section">
+    <div class="container">
+      <h2 class="center">Services</h2>
+      <div class="grid-3 mt-24">
+        <article class="card"><img src="https://picsum.photos/640/420?random=201" alt="Fabrication"><h3>Fabrication</h3><p>Shop-grade components delivered to spec with material tracking and QA reports.</p></article>
+        <article class="card"><img src="https://picsum.photos/640/420?random=202" alt="Erection"><h3>Erection</h3><p>Certified field crews, rigging, and on-site welding with OSHA-focused site protocols.</p></article>
+        <article class="card"><img src="https://picsum.photos/640/420?random=203" alt="Support"><h3>Project Support</h3><p>Steel takeoffs, RFIs, and coordination with GCs and trades, plus schedule alignment.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" class="section">
+    <div class="container">
+      <div class="projects-head"><h2>Projects</h2><a class="btn" href="#contact">Request Full Portfolio</a></div>
+      <div class="grid-3 mt-16">
+        <article class="proj-card"><img src="https://picsum.photos/960/540?random=301" alt="Project A"><div class="proj-body"><h3>Industrial Expansion — Phase II</h3><p class="dim">120,000 sq ft facility steel package delivered on time.</p></div></article>
+        <article class="proj-card"><img src="https://picsum.photos/960/540?random=302" alt="Project B"><div class="proj-body"><h3>Distribution Center Retrofit</h3><p class="dim">Complex retrofit with live operations coordination.</p></div></article>
+        <article class="proj-card"><img src="https://picsum.photos/960/540?random=303" alt="Project C"><div class="proj-body"><h3>Medical Complex Connector</h3><p class="dim">Multi-span connectors requiring precision welding.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <div class="container contact-grid">
+      <div class="card">
+        <h2>Contact</h2>
+        <p class="dim">Have drawings or a bid request? Send it over and we’ll get you scheduled.</p>
+        <ul>
+          <li><strong>Email:</strong> info@silveroakcontracting.com</li>
+          <li><strong>Phone:</strong> (555) 555-5555</li>
+          <li><strong>Service Area:</strong> Georgia and surrounding states</li>
+        </ul>
+      </div>
+      <form class="card" action="https://formspree.io/f/your-id" method="POST">
+        <label>Name<input type="text" name="name" required></label>
+        <label>Email<input type="email" name="email" required></label>
+        <label>Message<textarea name="message" rows="5" required></textarea></label>
+        <button class="btn primary" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <h3>Silver Oak Contracting</h3>
+      <p class="dim">© <span id="year"></span> Silver Oak Contracting. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  // Force MP4 source and reload video
+  (function(){
+    var v=document.querySelector('.hero-video video');
+    if(!v)return;
+    v.autoplay=v.muted=v.playsInline=v.loop=true;
+    v.poster='images/hero-static.jpg';
+    v.innerHTML='';
+    var s=document.createElement('source');
+    s.src='videos/videoplayback-transcode.mp4?v=2';
+    s.type='video/mp4';
+    v.appendChild(s);
+    try{v.load();v.play();}catch(e){}
+  })();
+  </script>
+</body>
+</html>
